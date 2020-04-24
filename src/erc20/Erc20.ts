@@ -33,18 +33,7 @@ export class Erc20 {
         let message = items.join();
         items.push(Ed25519.sign(message, options.privateKey));
 
-        console.log(this.contract);
-
-        let transaction = null;
-        try {
-            // let buffer = await transaction.submit(...items);
-            let transaction = await this.contract.submitTransaction(name, ...items);
-        } catch (error) {
-            console.log(error);
-        }
-
-        console.log(123);
-        let buffer = await transaction.submit(...items);
+        let buffer = await this.contract.submitTransaction(name, ...items);
         if (_.isNil(buffer) || buffer.length == 0) {
             throw new Error(`Invalid response for "${name}" method: ${args.join(',')}`);
         }
