@@ -32,8 +32,9 @@ export class Erc20 {
         let items = [name, options.publicKey, ...args, nonce];
         let message = items.join();
         items.push(Ed25519.sign(message, options.privateKey));
-
-        console.log(options);
+       
+        items.shift();
+        console.log(items);
 
         let buffer = await this.contract.submitTransaction(name, ...items);
         if (_.isNil(buffer) || buffer.length == 0) {
