@@ -33,6 +33,8 @@ export class Erc20 {
         let message = items.join();
         items.push(Ed25519.sign(message, options.privateKey));
 
+        console.log(options);
+
         let buffer = await this.contract.submitTransaction(name, ...items);
         if (_.isNil(buffer) || buffer.length == 0) {
             throw new Error(`Invalid response for "${name}" method: ${args.join(',')}`);
@@ -45,6 +47,10 @@ export class Erc20 {
     //  Public Methods
     //
     // --------------------------------------------------------------------------
+
+    public async swapDone(swapID: string, swapKEY: string, options: IUserOptions): Promise<any> {
+        return this.request(options, 'swapDone', swapID, swapKEY);
+    }
 
     public async transfer(address: string, amount: string, options: IUserOptions): Promise<any> {
         return this.request(options, 'transfer', address, amount);

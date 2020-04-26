@@ -39,7 +39,7 @@ export class Connector extends LoggerWrapper {
         await this.gateway.connect(this.settings.fabricConnectionSettingsPath, {
             wallet: await this.getWallet(),
             identity: this.settings.fabricIdentity,
-            discovery: { enabled: true, asLocalhost: true }
+            discovery: { enabled: false, asLocalhost: true }
         });
     }
 

@@ -26,7 +26,8 @@ async function bootstrap(): Promise<void> {
 
 
     // Transfer USDT to PDT
-    // await usdt.transfer(pdtUser.address, '100', usdtUser);
+    await usdt.transfer(pdtUser.address, '100', usdtUser);
+    // await usdt.swapDone('123', '100', usdtUser);
 }
 
 bootstrap();
