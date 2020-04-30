@@ -43,9 +43,13 @@ export class Example extends LoggerWrapper {
         this.pdt = new Erc20(this.logger, 'PDT', await connector.getContract('pdtchannel', 'pdt'));
         this.usdt = new Erc20(this.logger, 'USDT', await connector.getContract('usdtchannel', 'usdt'));
 
+        /*
         await this.showBalance(this.alice);
-        await this.transferPDTFromAliceToBob('2.5');
+        await this.showBalance(this.bob);
+        await this.transferUSDTFromAliceToBob('10');
         await this.showBalance(this.alice);
+        await this.showBalance(this.bob);
+        */
     }
 
     private async showBalance(user: UserCredentials): Promise<void> {
@@ -68,7 +72,7 @@ export class Example extends LoggerWrapper {
 
     private async buyBackPDTFromAlice(amount: string): Promise<void> {
         if (await this.pdt.buyBack(amount, this.usdt.name, this.alice)) {
-            this.logFormatted(`${this.alice.name} bought back`, `${amount} ${this.usdt.name}`);
+            this.logFormatted(`${this.alice.name} bought back`, `${amount} ${this.pdt.name}`);
         }
         this.log('-------------------------------');
     }
@@ -76,13 +80,26 @@ export class Example extends LoggerWrapper {
     private async allowUSDTtoPDTFromAlice(amount: string): Promise<void> {
         let key = '0xFF';
 
-        let id = await this.usdt.swapBegin(this.pdt.name, amount, key, this.alice);
+        let id = await this.usdt.swapBegin(this.usdt.name, this.pdt.name, amount, key, this.alice);
         this.logFormatted(`${this.alice.name} swap to PDT`, '5 sec waiting...');
         this.log(`Waiting 5 seconds...`);
 
         await PromiseHandler.delay(5 * DateUtil.MILISECONDS_SECOND);
         await this.pdt.swapDone(id, key);
         this.logFormatted(`${this.alice.name} swap to PDT`, 'Done!');
+        this.log('-------------------------------');
+    }
+
+    private async allowBackUSDTfromPDTFromAlice(amount: string): Promise<void> {
+        let key = '0xFF';
+
+        let id = await this.pdt.swapBegin(this.usdt.name, this.usdt.name, amount, key, this.alice);
+        this.logFormatted(`${this.alice.name} swap to USDT`, '5 sec waiting...');
+        this.log(`Waiting 5 seconds...`);
+
+        await PromiseHandler.delay(5 * DateUtil.MILISECONDS_SECOND);
+        await this.usdt.swapDone(id, key);
+        this.logFormatted(`${this.alice.name} swap to USDT`, 'Done!');
         this.log('-------------------------------');
     }
 

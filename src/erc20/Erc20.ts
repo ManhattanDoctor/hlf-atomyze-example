@@ -47,11 +47,11 @@ export class Erc20 extends LoggerWrapper {
     //
     // --------------------------------------------------------------------------
 
-    public async swapBegin(token: string, amount: string, key: string, user: IUserCredentials): Promise<string> {
+    public async swapBegin(token: string, toTokenChannel: string, amount: string, key: string, user: IUserCredentials): Promise<string> {
         let hash = createHash('sha3-256')
             .update(Buffer.from(key))
             .digest('hex');
-        return this.request(user, 'swapBegin', this.name, token, amount, hash);
+        return this.request(user, 'swapBegin', token, toTokenChannel, amount, hash);
     }
 
     public async swapDone(id: string, key: string): Promise<void> {
@@ -76,8 +76,8 @@ export class Erc20 extends LoggerWrapper {
     //
     // --------------------------------------------------------------------------
 
-    public async getRate(token: string): Promise<any> {
-        return await this.query('getRate', token);
+    public async getRate(token: string): Promise<number> {
+        return Number(await this.query('getRate', token));
     }
 
     public async balanceOf(address: string): Promise<number> {
