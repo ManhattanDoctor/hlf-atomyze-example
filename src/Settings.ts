@@ -1,7 +1,6 @@
 import { EnvSettingsStorage } from '@ts-core/backend/settings';
-import { ILogger, LoggerLevel } from '@ts-core/common/logger';
+import { LoggerLevel } from '@ts-core/common/logger';
 import { AbstractSettingsStorage } from '@ts-core/common/settings';
-import { IFabricApiSettings } from '@ts-core/blockchain-fabric/api';
 
 export class Settings extends EnvSettingsStorage {
     // --------------------------------------------------------------------------
@@ -36,12 +35,12 @@ export class Settings extends EnvSettingsStorage {
     //
     // --------------------------------------------------------------------------
 
-    public get usdtUserPrivateKey(): string {
-        return this.getValue('USDT_USER_PRIVATE_KEY');
+    public get bobPrivateKey(): string {
+        return this.getValue('BOB_PRIVATE_KEY');
     }
-
-    public get pdtUserPrivateKey(): string {
-        return this.getValue('PDT_USER_PRIVATE_KEY');
+    
+    public get alicePrivateKey(): string {
+        return this.getValue('ALICE_PRIVATE_KEY');
     }
     
     // --------------------------------------------------------------------------

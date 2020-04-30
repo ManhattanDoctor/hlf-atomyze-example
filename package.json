@@ -10,6 +10,7 @@
     "author": "Renat Gubaev",
     "license": "ISC",
     "dependencies": {
+        "@nestjs/common": "6.10.11",
         "@ts-core/backend": "^1.0.17",
         "@ts-core/backend-nestjs": "^6.0.10",
         "@ts-core/blockchain-fabric": "^1.0.27",

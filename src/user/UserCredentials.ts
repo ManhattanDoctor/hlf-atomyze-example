@@ -1,7 +1,7 @@
 import { Ed25519 } from '@ts-core/common/crypto';
 import { createHash } from 'crypto';
 
-export class UserOptions implements IUserOptions {
+export class UserCredentials implements IUserCredentials {
     // --------------------------------------------------------------------------
     //
     //  Properties
@@ -18,7 +18,8 @@ export class UserOptions implements IUserOptions {
     //
     // --------------------------------------------------------------------------
 
-    constructor(privateKey: string) {
+    constructor(public name: string, privateKey: string) {
+        
         this._privateKey = privateKey;
         this._publicKey = Ed25519.from(privateKey).publicKey;
         this._address = createHash('sha3-256')
@@ -45,8 +46,8 @@ export class UserOptions implements IUserOptions {
     }
 }
 
-export interface IUserOptions {
-    address: string;
-    publicKey: string;
-    privateKey: string;
+export interface IUserCredentials {
+    readonly address: string;
+    readonly publicKey: string;
+    readonly privateKey: string;
 }

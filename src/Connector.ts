@@ -54,7 +54,7 @@ export class Connector extends LoggerWrapper {
     //
     // --------------------------------------------------------------------------
 
-    protected async getWallet(): Promise<Wallet> {
+    private async getWallet(): Promise<Wallet> {
         if (_.isNil(this.wallet)) {
             this.wallet = new InMemoryWallet();
             await this.wallet.import(
@@ -69,7 +69,8 @@ export class Connector extends LoggerWrapper {
         return this.wallet;
     }
 
-    protected async enroll(): Promise<void> {
+    // Using for create certificate in authority service
+    private async enrollUsers(): Promise<void> {
         this.log(`Enrolling users...`);
 
         let path = `${this.configDir}/connection.json`;

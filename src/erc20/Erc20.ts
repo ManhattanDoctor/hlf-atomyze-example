@@ -1,82 +1,94 @@
-import { Network, Contract, Wallet, Gateway, InMemoryWallet, X509WalletMixin } from 'fabric-network';
-import { TransformUtil, DateUtil } from '@ts-core/common/util';
+import { Contract } from 'fabric-network';
+import { TransformUtil } from '@ts-core/common/util';
 import * as _ from 'lodash';
-import { IUserOptions } from '../user/UserOptions';
+import { IUserCredentials } from '../user/UserCredentials';
 import { Ed25519 } from '@ts-core/common/crypto';
+import { LoggerWrapper, ILogger } from '@ts-core/common/logger';
+import { createHash } from 'crypto';
 
-export class Erc20 {
+export class Erc20 extends LoggerWrapper {
     // --------------------------------------------------------------------------
     //
     //  Constructor
     //
     // --------------------------------------------------------------------------
 
-    constructor(protected contract: Contract) {}
-
-    // --------------------------------------------------------------------------
-    //
-    //  Protected Methods
-    //
-    // --------------------------------------------------------------------------
-
-    protected async query(name: string, ...args: Array<string>): Promise<string> {
-        let buffer = await this.contract.evaluateTransaction(name, ...args);
-        if (_.isNil(buffer) || buffer.length == 0) {
-            throw new Error(`Invalid response for "${name}" method: ${args.join(',')}`);
-        }
-        return buffer.toString(TransformUtil.ENCODING);
+    constructor(logger: ILogger, public name: string, private contract: Contract) {
+        super(logger, name);
     }
 
-    protected async request(options: IUserOptions, name: string, ...args: Array<string>): Promise<string> {
+    // --------------------------------------------------------------------------
+    //
+    //  Private Methods
+    //
+    // --------------------------------------------------------------------------
+
+    private async query(name: string, ...args: Array<string>): Promise<string> {
+        return this.parseResponse(await this.contract.evaluateTransaction(name, ...args));
+    }
+
+    private async request(user: IUserCredentials, name: string, ...args: Array<string>): Promise<string> {
         let nonce = Date.now().toString();
-        let items = [name, options.publicKey, ...args, nonce];
-        let message = items.join();
-        items.push(Ed25519.sign(message, options.privateKey));
-       
+        let items = [name, user.publicKey, ...args, nonce];
+        let message = items.join('');
+        items.push(Ed25519.sign(message, user.privateKey));
+
         items.shift();
-        console.log(items);
+        return this.parseResponse(await this.contract.submitTransaction(name, ...items));
+    }
 
-        let buffer = await this.contract.submitTransaction(name, ...items);
-        if (_.isNil(buffer) || buffer.length == 0) {
-            throw new Error(`Invalid response for "${name}" method: ${args.join(',')}`);
-        }
-        return buffer.toString(TransformUtil.ENCODING);
+    private parseResponse(buffer: Buffer): string {
+        return _.isNil(buffer) || buffer.length == 0 ? '' : buffer.toString(TransformUtil.ENCODING);
     }
 
     // --------------------------------------------------------------------------
     //
-    //  Public Methods
+    //  Invoke Methods
     //
     // --------------------------------------------------------------------------
 
-    public async swapDone(swapID: string, swapKEY: string, options: IUserOptions): Promise<any> {
-        return this.request(options, 'swapDone', swapID, swapKEY);
+    public async swapBegin(token: string, amount: string, key: string, user: IUserCredentials): Promise<string> {
+        let hash = createHash('sha3-256')
+            .update(Buffer.from(key))
+            .digest('hex');
+        return this.request(user, 'swapBegin', this.name, token, amount, hash);
     }
 
-    public async transfer(address: string, amount: string, options: IUserOptions): Promise<any> {
-        return this.request(options, 'transfer', address, amount);
+    public async swapDone(id: string, key: string): Promise<void> {
+        await this.contract.submitTransaction('swapDone', id, key);
     }
 
-    public async totalSupply(): Promise<string> {
-        return this.query('totalSupply');
+    public async buy(amount: string, token: string, user: IUserCredentials): Promise<boolean> {
+        return (await this.request(user, 'buyToken', amount, token)) === 'true';
     }
 
-    public async balanceOf(address: string): Promise<string> {
-        return this.query('totalSupply', ...arguments);
+    public async buyBack(amount: string, token: string, user: IUserCredentials): Promise<boolean> {
+        return (await this.request(user, 'buyBack', amount, token)) === 'true';
     }
 
-    /*
+    public async transfer(address: string, amount: string, user: IUserCredentials): Promise<boolean> {
+        return (await this.request(user, 'transfer', address, amount)) === 'true';
+    }
 
+    // --------------------------------------------------------------------------
+    //
+    //  Query Methods
+    //
+    // --------------------------------------------------------------------------
 
-     let content = TransformUtil.fromJSON(TransformUtil.fromClass(request.payload));
-            let response = null;
-            if (this.isNeedSign(command.name)) {
-                let transaction = await this.contract.createTransaction(request.method);
-                response = await transaction.submit(content);
-            } else {
-                response = await this.contract.evaluateTransaction(request.method, content);
-            }
+    public async getRate(token: string): Promise<any> {
+        return await this.query('getRate', token);
+    }
 
+    public async balanceOf(address: string): Promise<number> {
+        return Number(await this.query('balanceOf', address));
+    }
 
-            */
+    public async allowedBalanceOf(address: string, token: string): Promise<number> {
+        return Number(await this.query('allowedBalanceOf', address, token));
+    }
+
+    public async totalSupply(): Promise<number> {
+        return Number(await this.query('totalSupply'));
+    }
 }
