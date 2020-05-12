@@ -14,7 +14,7 @@
         "@ts-core/backend": "^1.0.17",
         "@ts-core/backend-nestjs": "^6.0.10",
         "@ts-core/blockchain-fabric": "^1.0.45",
-        "@ts-core/common": "^1.0.97",
+        "@ts-core/common": "^1.0.98",
         "crypto": "^1.0.1"
     },
     "devDependencies": {
